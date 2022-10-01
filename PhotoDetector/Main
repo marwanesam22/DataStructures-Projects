@@ -1,0 +1,123 @@
+import java.io.*;
+import java.util.*;
+import java.text.*;
+import java.math.*;
+import java.util.regex.*;
+
+
+interface IPlayersFinder {
+
+    public int [][] findPlayers (char [][] Photo , char id , int area) ; 
+    public void re (char [][]Photo , int i , int j , char id);
+    
+}
+
+
+public class PlayersFinder implements IPlayersFinder{
+    
+    static int Min_x=0 ,Max_x=0 , Min_y=0 , Max_y=0 , sum=0 , chain =0;
+    
+    public int [][] findPlayers (char [][] Photo , char id , int area){
+        int[][] arr = new int [100][2] ;
+        int index =0 ;
+        for(int i=0 ; i< Photo.length ; i++){
+            for (int j=0 ; j<Photo[i].length ; j++){
+                if(Photo[i][j] == id){
+                    Min_x=i; Max_x=i ; Min_y=j ; Max_y=j ;
+                    re(Photo ,i , j , id);
+                    if(sum*4 >= area){
+                        chain++ ;
+                        arr[index][0] =Min_y+Max_y+1 ; //x point[[][]]
+                        arr[index][1] =Min_x+Max_x+1 ; //y point
+                        index++ ;
+                    }
+                    Min_x=0; Max_x=0 ; Min_y=0 ; Max_y=0 ; sum=0 ;
+                }
+            }
+        }
+        return arr ;
+    }
+    
+    
+     public void re (char [][]Photo , int i , int j , char id){
+
+        if(i<0 || i>= Photo.length || j<0 || j>=Photo[i].length || Photo[i][j]!=id){
+            return;
+        }
+        if(i<Min_x){Min_x = i ; }
+        else if(i>Max_x){Max_x = i ; }
+        if(j<Min_y){Min_y = j ; }
+        else if(j>Max_y){Max_y = j ; }
+        sum++ ;
+        Photo[i][j] = '$' ;
+        re(Photo ,i-1 , j , id); //up
+        re(Photo ,i+1 , j , id);  //down
+        re(Photo ,i , j+1 , id);  //right
+        re(Photo ,i , j-1 , id);  //left
+
+    }
+    
+    
+    public static void main(String[] args) {
+        /* Implement main method to parse the input from stdin and print output to stdout */
+        //scan dimension
+        Scanner input = new Scanner(System.in) ;
+        String dim = input.nextLine() ;
+        String [] dim2 = dim.split(", ") ;
+        int row = Integer.parseInt(dim2[0]) ;
+        int col = Integer.parseInt(dim2[1]) ;
+
+
+        //scan Photo of ground as String
+        String  [] str = new String [row] ;
+        char [][] arr = new char[row][col] ;
+        for(int i = 0 ; i<row ; i++){
+            str[i] = input.nextLine();
+        }
+
+
+        char identifier = input.next().charAt(0) ; //scan identifier
+        int area = input.nextInt() ;  //scan area
+
+
+        //convert the Photo to array of characters
+        for(int m=0 ; m<row ; m++){
+            arr[m] = str[m].toCharArray() ;
+        }
+        PlayersFinder player = new PlayersFinder() ; 
+        int [][]res =  player.findPlayers(arr , identifier , area) ;
+        int temp1 , temp2 ;
+        for(int i=0 ; i<chain-1  ; i++){
+            for(int j=i+1 ; j<chain ; j++){
+                if(res[i][0] > res[j][0]){
+                    temp1 = res[i][0]; temp2 = res[i][1] ;
+                    res[i][0]= res[j][0]; res[i][1] = res[j][1] ;
+                    res[j][0] = temp1 ; res [j][1] = temp2 ;
+                }
+                else if (res[i][0] == res[j][0]){
+                    if(res[i][1] > res[j][1]){
+                        temp1 = res[i][0]; temp2 = res[i][1];
+                        res[i][0]= res[j][0]; res[i][1] = res[j][1] ;
+                        res[j][0] = temp1 ; res [j][1] = temp2 ;
+                    }
+                }
+            }
+        }
+        System.out.print("[");
+        for(int r=0 ; r< chain ; r++){
+            System.out.print("(");
+            for(int c=0 ; c<2 ; c++){
+                System.out.print(res[r][c]);
+                if(c+1<2){
+                    System.out.print(", ");
+                }
+            }
+            System.out.print(")");
+            if(r+1<chain){
+                System.out.print(", ");
+            }
+        }
+        System.out.print("]");
+    }
+    
+}
